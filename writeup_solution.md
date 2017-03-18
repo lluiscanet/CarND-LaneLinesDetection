@@ -40,8 +40,10 @@ x2 = int((y2-intercept)/(slope))
 ```
 4. Once the edge of those lines are defined, they will get drawn on the image.
 
-See the below test images processed both with and without regression.
+See the below test images processed with regressed=False.
 ![Images without regression][image1]
+
+And now with regressed=True
 ![Images with regression][image2]
 
 Look at the jupyter notebook on how the solution looks for the test videos.
