@@ -1,53 +1,73 @@
-#**Finding Lane Lines on the Road** 
-[![Udacity - Self-Driving Car NanoDegree](https://s3.amazonaws.com/udacity-sdc/github/shield-carnd.svg)](http://www.udacity.com/drive)
+## **Finding Lane Lines on the Road** 
 
-<img src="examples/laneLines_thirdPass.jpg" width="480" alt="Combined Image" />
+Lluis Canet - March 2017
 
-Overview
+lluis.canet@dadrin.com
+
+The goals / steps of this project are the following:
+* Make a pipeline that finds lane lines on the road
+* Reflect on your work in a written report
+
+
+[//]: # (Image References)
+
+[image1]: ./test_images_output/report_hough.png "Images with raw Hought Lines"
+[image2]: ./test_images_output/report_lanes.png "Images with regressed lines"
+
 ---
 
-When we drive, we use our eyes to decide where to go.  The lines on the road that show us where the lanes are act as our constant reference for where to steer the vehicle.  Naturally, one of the first things we would like to do in developing a self-driving car is to automatically detect lane lines using an algorithm.
+### Reflection
 
-In this project you will detect lane lines in images using Python and OpenCV.  OpenCV means "Open-Source Computer Vision", which is a package that has many useful tools for analyzing images.  
+###1. Describe your pipeline. As part of the description, explain how you modified the draw_lines() function.
 
-To complete the project, two files will be submitted: a file containing project code and a file containing a brief write up explaining your solution. We have included template files to be used both for the [code](https://github.com/udacity/CarND-LaneLines-P1/blob/master/P1.ipynb) and the [writeup](https://github.com/udacity/CarND-LaneLines-P1/blob/master/writeup_template.md).The code file is called P1.ipynb and the writeup template is writeup_template.md 
+A method called lane_detection was created, which defines the processing pipeline for an individual image. This pipeline has the following steps:
 
-To meet specifications in the project, take a look at the requirements in the [project rubric](https://review.udacity.com/#!/rubrics/322/view)
+1. Convert image to grayscale
+2. Apply gaussian blur to the grayscale image with a kernel of 5 pixels as a pre-processing step for edge detection
+3. Perform Canny edge detection on the blurred grayscale image. The values selected for the low threshold and high threshold are 50 and 150. This values have been selected based on visual observation of the processed images.
+4. Mask the edge detected image (output of previous step) by a region of interest. The region of interest has been determined visualy to be between the bottom left corner of the image, the point (450, 320), the point (490, 320) and the bottom right corner of the image. This values have been selected to mask out as many non-relevant edges as possible.
+5. The final step is to peform line detection on the masked edge detected image from previous step. This step includes a configurable parameter, called "regressed". When "regressed" is False, the method will return the image annotated with the hugh lines.
+
+In the final step, if regressed is True, then we do the following:
+1. Separate the detected lines on left and right. The criteria will for left will be all the lines with a negative slope and x1 and x2 values less than 480 pixels. The value of the slope is calculated as (y2-y1)/(x2-x1).
+2. Perform linear regression and all line edges from each of the groups (left and right) and in order to calculate the slope and intercept values for each of the lines that will define the lane boundaries.
+3. Calculate the edge points for the lines that will be drawn in the final images. This will be determined by the previously calculated slope and intercept values using the following formula, where y_top and y_bottom are considered the top and bottom values for y in the region of interest used for the edge detection masking
+```
+y1 = y_top
+y2 = y_bottom
+x1 = int((y1-intercept)/(slope))
+x2 = int((y2-intercept)/(slope))
+```
+4. Once the edge of those lines are defined, they will get drawn on the image.
+
+See the below test images processed with regressed=False.
+![Images without regression][image1]
+
+And now with regressed=True
+![Images with regression][image2]
+
+Look at the jupyter notebook on how the solution looks for the test videos.
+
+Some additional helper functions have been added to help on the development of the solution such as ```show_image_array(...)```, which displays a matrix of images that are being inputed as an array, or ```save_image_array(...)```, which saves images inputed as an array to the path location specified in the input parameter.
 
 
-Creating a Great Writeup
----
-For this project, a great writeup should provide a detailed response to the "Reflection" section of the [project rubric](https://review.udacity.com/#!/rubrics/322/view). There are three parts to the reflection:
 
-1. Describe the pipeline
+###2. Identify potential shortcomings with your current pipeline
 
-2. Identify any shortcomings
+There are several shortcommings associated with this solution:
+* The values selected for the edge detection parameters and the hough line detection are very sensitive to lighting conditions and will not work that well with shadows or during nightime.
+* If a car crosses the lane line in front of us, it will distort the line detected.
+* Since the region of interest is hardcoded, it will fail when the car is changing lanes or if the camer is placed on another location relative to the car.
+* This lane detection will not work well on curves since the lanes will be bended.
+* The current approach is very sensitve to outliers in the lane detection.
+* Since each images is processed individually, there is no sequential continuity on the position of the lines which can cause the line to be very different from one frame to another.
 
-3. Suggest possible improvements
+###3. Suggest possible improvements to your pipeline
 
-We encourage using images in your writeup to demonstrate how your pipeline works.  
-
-All that said, please be concise!  We're not looking for you to write a book here: just a brief description.
-
-You're not required to use markdown for your writeup.  If you use another method please just submit a pdf of your writeup. Here is a link to a [writeup template file](https://github.com/udacity/CarND-LaneLines-P1/blob/master/writeup_template.md). 
-
-
-The Project
----
-
-## If you have already installed the [CarND Term1 Starter Kit](https://github.com/udacity/CarND-Term1-Starter-Kit/blob/master/README.md) you should be good to go!   If not, you should install the starter kit to get started on this project. ##
-
-**Step 1:** Set up the [CarND Term1 Starter Kit](https://classroom.udacity.com/nanodegrees/nd013/parts/fbf77062-5703-404e-b60c-95b78b2f3f9e/modules/83ec35ee-1e02-48a5-bdb7-d244bd47c2dc/lessons/8c82408b-a217-4d09-b81d-1bda4c6380ef/concepts/4f1870e0-3849-43e4-b670-12e6f2d4b7a7) if you haven't already.
-
-**Step 2:** Open the code in a Jupyter Notebook
-
-You will complete the project code in a Jupyter notebook.  If you are unfamiliar with Jupyter Notebooks, check out <A HREF="https://www.packtpub.com/books/content/basics-jupyter-notebook-and-python" target="_blank">Cyrille Rossant's Basics of Jupyter Notebook and Python</A> to get started.
-
-Jupyter is an Ipython notebook where you can run blocks of code and see results interactively.  All the code for this project is contained in a Jupyter notebook. To start Jupyter in your browser, use terminal to navigate to your project directory and then run the following command at the terminal prompt (be sure you've activated your Python 3 carnd-term1 environment as described in the [CarND Term1 Starter Kit](https://github.com/udacity/CarND-Term1-Starter-Kit/blob/master/README.md) installation instructions!):
-
-`> jupyter notebook`
-
-A browser window will appear showing the contents of the current directory.  Click on the file called "P1.ipynb".  Another browser window will appear displaying the notebook.  Follow the instructions in the notebook to complete the project.  
-
-**Step 3:** Complete the project and submit both the Ipython notebook and the project writeup
+Some improvement to this solution could be:
+* An adaptive region of interst based on regions on an initial processing of the image.
+* Adaptive parameters for edge detection and Hough line detection based on lighting conditions.
+* Segment the images for differnt lighting conditions and apply different parameters to each section.
+* Detect if vehicles are covering the line lanes to avoid miss-representation of them.
+* Take advantage of the sequential nature of the video by doing a weighted average of the slope and intercept parameters for the regressed lines between the current frame and the previous frames, with a decay function for the weith on the previous frames that will give smaller weight to older frames. This should help stabilize the output.
 
