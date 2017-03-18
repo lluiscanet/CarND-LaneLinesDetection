@@ -1,6 +1,7 @@
 ## **Finding Lane Lines on the Road** 
 
 Lluis Canet - March 2017
+
 lluis.canet@dadrin.com
 
 The goals / steps of this project are the following:
@@ -10,8 +11,8 @@ The goals / steps of this project are the following:
 
 [//]: # (Image References)
 
-[image1]: ./test_images_output/report_hough.jpg "Images with raw Hought Lines"
-[image2]: ./test_images_output/report_lanes.jpg "Images with regressed lines"
+[image1]: ./test_images_output/report_hough.png "Images with raw Hought Lines"
+[image2]: ./test_images_output/report_lanes.png "Images with regressed lines"
 
 ---
 
@@ -19,7 +20,7 @@ The goals / steps of this project are the following:
 
 ###1. Describe your pipeline. As part of the description, explain how you modified the draw_lines() function.
 
-I have created a method called lane_detection, which defines the processing pipeline for an individual image. This pipeline has the following steps:
+A method called lane_detection was created, which defines the processing pipeline for an individual image. This pipeline has the following steps:
 
 1. Convert image to grayscale
 2. Apply gaussian blur to the grayscale image with a kernel of 5 pixels as a pre-processing step for edge detection
@@ -28,16 +29,16 @@ I have created a method called lane_detection, which defines the processing pipe
 5. The final step is to peform line detection on the masked edge detected image from previous step. This step includes a configurable parameter, called "regressed". When "regressed" is False, the method will return the image annotated with the hugh lines.
 
 In the final step, if regressed is True, then we do the following:
-1.. Separate the detected lines on left and right. The criteria will for left will be all the lines with a negative slope and x1 and x2 values less than 480 pixels. The value of the slope is calculated as (y2-y1)/(x2-x1).
-2.. Perform linear regression and all line edges from each of the groups (left and right) and in order to calculate the slope and intercept values for each of the lines that will define the lane boundaries.
-3.. Calculate the edge points for the lines that will be drawn in the final images. This will be determined by the previously calculated slope and intercept values using the following formula, where y_top and y_bottom are considered the top and bottom values for y in the region of interest used for the edge detection masking
+1. Separate the detected lines on left and right. The criteria will for left will be all the lines with a negative slope and x1 and x2 values less than 480 pixels. The value of the slope is calculated as (y2-y1)/(x2-x1).
+2. Perform linear regression and all line edges from each of the groups (left and right) and in order to calculate the slope and intercept values for each of the lines that will define the lane boundaries.
+3. Calculate the edge points for the lines that will be drawn in the final images. This will be determined by the previously calculated slope and intercept values using the following formula, where y_top and y_bottom are considered the top and bottom values for y in the region of interest used for the edge detection masking
 ```
 y1 = y_top
 y2 = y_bottom
 x1 = int((y1-intercept)/(slope))
 x2 = int((y2-intercept)/(slope))
 ```
-4.. Once the edge of those lines are defined, they will get drawn on the image.
+4. Once the edge of those lines are defined, they will get drawn on the image.
 
 See the below test images processed both with and without regression.
 ![Images without regression][image1]
