@@ -29,16 +29,17 @@ A method called lane_detection was created, which defines the processing pipelin
 5. The final step is to peform line detection on the masked edge detected image from previous step. This step includes a configurable parameter, called "regressed". When "regressed" is False, the method will return the image annotated with the hugh lines.
 
 In the final step, if regressed is True, then we do the following:
-1. Separate the detected lines on left and right. The criteria will for left will be all the lines with a negative slope and x1 and x2 values less than 480 pixels. The value of the slope is calculated as (y2-y1)/(x2-x1).
-2. Perform linear regression and all line edges from each of the groups (left and right) and in order to calculate the slope and intercept values for each of the lines that will define the lane boundaries.
-3. Calculate the edge points for the lines that will be drawn in the final images. This will be determined by the previously calculated slope and intercept values using the following formula, where y_top and y_bottom are considered the top and bottom values for y in the region of interest used for the edge detection masking
+1. Filter lines detected where the absolute value of the slope is 0.45 (This would be lines that are abnormally close to horizontal)
+2. Separate the detected lines on left and right. The criteria will for left will be all the lines with a negative slope and x1 and x2 values less than 480 pixels. The value of the slope is calculated as (y2-y1)/(x2-x1).
+3. Perform linear regression and all line edges from each of the groups (left and right) and in order to calculate the slope and intercept values for each of the lines that will define the lane boundaries.
+4. Calculate the edge points for the lines that will be drawn in the final images. This will be determined by the previously calculated slope and intercept values using the following formula, where y_top and y_bottom are considered the top and bottom values for y in the region of interest used for the edge detection masking
 ```
 y1 = y_top
 y2 = y_bottom
 x1 = int((y1-intercept)/(slope))
 x2 = int((y2-intercept)/(slope))
 ```
-4. Once the edge of those lines are defined, they will get drawn on the image.
+5. Once the edge of those lines are defined, they will get drawn on the image.
 
 See the below test images processed with regressed=False.
 ![Images without regression][image1]
@@ -57,7 +58,7 @@ Some additional helper functions have been added to help on the development of t
 There are several shortcommings associated with this solution:
 * The values selected for the edge detection parameters and the hough line detection are very sensitive to lighting conditions and will not work that well with shadows or during nightime.
 * If a car crosses the lane line in front of us, it will distort the line detected.
-* Since the region of interest is hardcoded, it will fail when the car is changing lanes or if the camer is placed on another location relative to the car.
+* Since the region of interest is hardcoded, it will fail when the car is changing lanes or if the camera is placed on another location relative to the car. This will also affect if the resolution of the image changes, as it happens in the Optional Challenge.
 * This lane detection will not work well on curves since the lanes will be bended.
 * The current approach is very sensitve to outliers in the lane detection.
 * Since each images is processed individually, there is no sequential continuity on the position of the lines which can cause the line to be very different from one frame to another.
@@ -71,3 +72,5 @@ Some improvement to this solution could be:
 * Detect if vehicles are covering the line lanes to avoid miss-representation of them.
 * Take advantage of the sequential nature of the video by doing a weighted average of the slope and intercept parameters for the regressed lines between the current frame and the previous frames, with a decay function for the weith on the previous frames that will give smaller weight to older frames. This should help stabilize the output.
 
+## Optional Challenge
+This is an image with changing lighting conditions and shadows and therefore, the hough line parameters had to be slightly adjusted to account for the new lighting conditions. Also, the polygon that defines the area of inteset for the Canny edge detection had to be adjusted to new values, since the resolution and positioning of the camera were different than in the original scenarios.
